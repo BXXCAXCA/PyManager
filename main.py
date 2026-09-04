@@ -29,6 +29,7 @@ from PySide6.QtWidgets import (
 )
 from PySide6.QtCore import Qt, QTimer
 from PySide6.QtCore import QLibraryInfo
+from PySide6.QtGui import QIcon
 
 from src.database import DatabaseManager
 from src.environment_manager import (
@@ -3152,7 +3153,19 @@ class MainWindow(QMainWindow):
     
     
 if __name__ == "__main__":
+    if sys.platform == "win32":
+        # 让源码运行时的任务栏使用应用图标，而不是 Python 图标。
+        import ctypes
+        try:
+            ctypes.windll.shell32.SetCurrentProcessExplicitAppUserModelID("PyManager.Desktop")
+        except OSError:
+            logger.warning("Unable to set Windows application ID", exc_info=True)
+
     app = QApplication(sys.argv)
+    app.setApplicationName("PyManager")
+    # PyInstaller 会将 __file__ 指向解包目录，兼容源码和打包运行。
+    icon_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), "assets", "pymanager.png")
+    app.setWindowIcon(QIcon(icon_path))
     
     # 加载 Qt 中文翻译
     from PySide6.QtCore import QTranslator, QLocale

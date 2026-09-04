@@ -4,7 +4,7 @@ a = Analysis(
     ['main.py'],
     pathex=['.'],
     binaries=[],
-    datas=[('docs', 'docs')],
+    datas=[('docs', 'docs'), ('assets/pymanager.png', 'assets')],
     hiddenimports=[
         'PySide6.QtCore',
         'PySide6.QtGui',
@@ -27,6 +27,7 @@ exe = EXE(
     [],
     exclude_binaries=False,
     name='PyManager',
+    icon='assets/pymanager.ico',
     debug=False,
     bootloader_ignore_signals=False,
     strip=False,
