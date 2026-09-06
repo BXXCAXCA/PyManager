@@ -48,3 +48,44 @@ jobs:
           path: dist/PyManager.exe
           if-no-files-found: error
           retention-days: 14
+
+  publish-continuous:
+    name: Publish continuous build
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    needs: test-and-build
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+
+    steps:
+      - name: Download Windows executable
+        uses: actions/download-artifact@v4
+        with:
+          name: PyManager-windows
+          path: release
+
+      - name: Update continuous release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          notes="Automated Windows build from commit ${GITHUB_SHA}. This prerelease is replaced after every successful push to main."
+          if gh release view continuous --repo "$GITHUB_REPOSITORY" >/dev/null 2>&1; then
+            gh release edit continuous \
+              --repo "$GITHUB_REPOSITORY" \
+              --title "PyManager Continuous Build" \
+              --notes "$notes" \
+              --prerelease \
+              --latest=false \
+              --target "$GITHUB_SHA"
+            gh release upload continuous release/PyManager.exe \
+              --repo "$GITHUB_REPOSITORY" \
+              --clobber
+          else
+            gh release create continuous release/PyManager.exe \
+              --repo "$GITHUB_REPOSITORY" \
+              --title "PyManager Continuous Build" \
+              --notes "$notes" \
+              --prerelease \
+              --latest=false \
+              --target "$GITHUB_SHA"
+          fi
